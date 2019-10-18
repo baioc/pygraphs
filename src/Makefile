@@ -1,16 +1,16 @@
-APP_NAME = ufsc-graphs
+APP_NAME = pygraphs
 
-SRCDIR = ufsc_graphs
+SRCDIR = $(APP_NAME)
 SRC = setup.py LICENSE README.md \
       $(SRCDIR)/__init__.py \
-      $(SRCDIR)/graphs.py \
+      $(SRCDIR)/libpygraphs.py \
       $(SRCDIR)/search.py \
       $(SRCDIR)/cycle.py \
       $(SRCDIR)/path.py
 
 OBJ = build/ \
       dist/ \
-      ufsc_graphs.egg-info/
+      $(APP_NAME).egg-info/
 
 default:
 	make build

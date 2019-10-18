@@ -1,12 +1,12 @@
 #include "graph.hpp"
 
 #include <iostream>
-#include <cmath> // HUGE_VAL
+#include <cmath> // HUGE_VALF
 
 
 template <typename L, typename W, bool d>
 std::ostream& operator<<(std::ostream&  out, const structures::Graph<L,W,d>& g) {
-	out << "Graph has a total of "
+	out << (g.directed() ? "Digraph" : "Graph") << " has a total of "
 	    << g.node_number() << " nodes" << " and "
 	    << g.edge_number() << " edges" << '\n';
 

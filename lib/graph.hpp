@@ -1,16 +1,6 @@
 /*
  * Copyright (c) 2019 Gabriel B. Sant'Anna <baiocchi.gabriel@gmail.com>
- *
- * @License Apache <https://gitlab.com/baioc/paradigms>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @License Apache <https://gitlab.com/baioc/pygraphs>
  */
 
 #ifndef STRUCTURES_GRAPH_HPP
@@ -26,7 +16,7 @@ namespace structures {
 using std::unordered_map;
 
 
-template <typename Label, typename Weight, bool directed=false>
+template <typename Label, typename Weight, bool direct=false>
 	// requires Hashable<Label>,
 	//          LessThanComparable<Weight>,
 	//          std::numeric_limits<Weight>::has_infinity(),
@@ -35,6 +25,8 @@ class Graph {
  public:
 	Graph() = default;
 	explicit Graph(int);
+
+	constexpr bool directed() const;
 
 	int node_number() const; // O(1)
 	int edge_number() const; // O(1)
@@ -71,6 +63,12 @@ Graph<L,W,d>::Graph(int node_capacity)
 	adjacencies_.reserve(node_capacity);
 }
 
+template <typename L, typename W, bool dir>
+constexpr bool Graph<L,W,dir>::directed() const
+{
+	return dir;
+}
+
 template <typename L, typename W, bool d>
 inline int Graph<L,W,d>::node_number() const
 {
@@ -88,7 +86,7 @@ inline bool Graph<L,W,d>::insert(L node)
 {
 	unordered_map<L,W> empty = {};
 	const auto ret = adjacencies_.emplace(std::move(node), std::move(empty));
-	return ret.second; // map's signaling if emplace occurred
+	return ret.second; // map's signaling of whether emplace occurred
 }
 
 template <typename L, typename W, bool d>
@@ -106,8 +104,8 @@ int Graph<L,W,d>::erase(const L& node)
 	return erased; // number of erased edges
 }
 
-template <typename L, typename W, bool directed>
-int Graph<L,W,directed>::link(const L& node_from, const L& node_to, W weight)
+template <typename L, typename W, bool dir>
+int Graph<L,W,dir>::link(const L& node_from, const L& node_to, W weight)
 {
 	// remove "unlinks", see criteria for contains(link) method
 	if (!(weight < infinity_))
@@ -124,14 +122,14 @@ int Graph<L,W,directed>::link(const L& node_from, const L& node_to, W weight)
 
 	// or simply updated its weight
 	adjacencies_[node_from][node_to] = std::move(weight);
-	if constexpr (!directed)
+	if constexpr (!dir)
 		adjacencies_[node_to][node_from] = std::move(weight);
 
 	return inserted; // number of implicitly created nodes
 }
 
-template <typename L, typename W, bool directed>
-int Graph<L,W,directed>::unlink(const L& node_from, const L& node_to)
+template <typename L, typename W, bool dir>
+int Graph<L,W,dir>::unlink(const L& node_from, const L& node_to)
 {
 	int disconnected = 0;
 
@@ -141,7 +139,7 @@ int Graph<L,W,directed>::unlink(const L& node_from, const L& node_to)
 		if (disconnected)
 			--edges_;
 
-		if constexpr (!directed)
+		if constexpr (!dir)
 			disconnected += adjacencies_[node_to].erase(node_from);
 	}
 
@@ -154,25 +152,25 @@ inline bool Graph<L,W,d>::contains(const L& node) const
 	return adjacencies_.find(node) != adjacencies_.end();
 }
 
-template <typename L, typename W, bool directed>
-inline int Graph<L,W,directed>::degree(const L& node) const
+template <typename L, typename W, bool dir>
+inline int Graph<L,W,dir>::degree(const L& node) const
 {
-	if constexpr (!directed)
+	if constexpr (!dir)
 		return degree_out(node);
 	else
 		return contains(node) ? degree_out(node) + degree_in(node) : -1;
 }
 
-template <typename L, typename W, bool directed>
-inline int Graph<L,W,directed>::degree_out(const L& node) const
+template <typename L, typename W, bool d>
+inline int Graph<L,W,d>::degree_out(const L& node) const
 {
 	return contains(node) ? adjacencies_.at(node).size() : -1;
 }
 
-template <typename L, typename W, bool directed>
-int Graph<L,W,directed>::degree_in(const L& node) const
+template <typename L, typename W, bool dir>
+int Graph<L,W,dir>::degree_in(const L& node) const
 {
-	if constexpr (!directed) {
+	if constexpr (!dir) {
 		return degree_out(node);
 
 	} else {
@@ -180,10 +178,8 @@ int Graph<L,W,directed>::degree_in(const L& node) const
 			return -1;
 
 		int sum = 0;
-		for (const auto& assoc: adjacencies_) {
-			const auto& adj = assoc.second;
-			sum += adj.count(node);
-		}
+		for (const auto& assoc: adjacencies_)
+			sum += assoc.second.count(node);
 
 		return sum;
 	}
@@ -192,14 +188,14 @@ int Graph<L,W,directed>::degree_in(const L& node) const
 template <typename L, typename W, bool d>
 inline bool Graph<L,W,d>::contains(const L& node_from, const L& node_to) const
 {
-	return weight(node_from, node_to) < infinity_ && !(node_from == node_to);
+	return !(node_from == node_to) && weight(node_from, node_to) < infinity_;
 }
 
-template <typename L, typename W, bool d>
-W Graph<L,W,d>::weight(const L& node_from, const L& node_to) const
+template <typename L, typename Weight, bool d>
+Weight Graph<L,Weight,d>::weight(const L& node_from, const L& node_to) const
 {
 	if (node_from == node_to) {
-		W w = 0;
+		Weight w = 0;
 		return w;
 	} else if (contains(node_from)) {
 		const auto& adj = adjacencies_.at(node_from);
@@ -219,7 +215,7 @@ const unordered_map<L,unordered_map<L,W>>& Graph<L,W,d>::nodes() const
 template <typename L, typename W, bool d>
 const unordered_map<L,W>& Graph<L,W,d>::neighbours(const L& node) const
 {
-	unordered_map<L,W> empty = {};
+	const unordered_map<L,W> empty = {};
 	return contains(node) ? adjacencies_.at(node) : empty;
 }
 

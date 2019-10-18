@@ -1,5 +1,5 @@
 # Copyright (c) 2019 Gabriel B. Sant'Anna <baiocchi.gabriel@gmail.com>
-# @License Apache <https://gitlab.com/baioc/paradigms>
+# @License Apache <https://gitlab.com/baioc/pygraphs>
 
 from .graphs import Graph, Digraph
 from typing import Set, Tuple, Dict, Optional, List, Union

@@ -1,5 +1,5 @@
 // SWIG interface definition
-%module graphs
+%module libpygraphs
 %{
 	// preprocessor directives directly included into wrapper code
 	#include "graph.hpp"
@@ -17,9 +17,9 @@
 
 // explicit template instantiation
 %template(Graph) structures::Graph<std::string,double>;
+%template(Digraph) structures::Graph<std::string,double,true>;
 %template(GraphEdges) std::unordered_map<std::string,double>;
 %template(GraphNodes) std::unordered_map<std::string,std::unordered_map<std::string,double>>;
-%template(Digraph) structures::Graph<std::string,double,true>;
 
 // type mapping
 //
