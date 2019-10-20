@@ -1,7 +1,7 @@
 # Copyright (c) 2019 Gabriel B. Sant'Anna <baiocchi.gabriel@gmail.com>
 # @License Apache <https://gitlab.com/baioc/pygraphs>
 
-from .graphs import Digraph, Graph
+from .libpygraphs import Digraph, Graph
 from typing import Set, Tuple, Dict, Optional, Generator, Union
 from math import inf
 from pprint import pprint

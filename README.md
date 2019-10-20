@@ -15,7 +15,7 @@ At this point, distributed packages are compatible with Linux only.
 
 2. Import the package:
 
-    ```import pygraphs```
+    ```import pygraphs as pyg```
 
 ### Features
 

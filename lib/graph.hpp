@@ -26,7 +26,7 @@ class Graph {
 	Graph() = default;
 	explicit Graph(int);
 
-	constexpr bool directed() const;
+	constexpr bool directed() const; // O(1)
 
 	int node_number() const; // O(1)
 	int edge_number() const; // O(1)
@@ -45,8 +45,8 @@ class Graph {
 	bool contains(const Label&, const Label&) const; // O(1)
 	Weight weight(const Label&, const Label&) const; // O(1)
 
-	// returning vectors or using output iterators would be cleaner; these
-	// methods' signatures are such only in order to get O(1) time complexity
+	// returning vectors or using output iterators would be cleaner; the
+	// intention is that these methods return some iterable in constant time
 	const unordered_map<Label,unordered_map<Label,Weight>>& nodes() const;
 	const unordered_map<Label,Weight>& neighbours(const Label&) const;
 
@@ -89,17 +89,21 @@ inline bool Graph<L,W,d>::insert(L node)
 	return ret.second; // map's signaling of whether emplace occurred
 }
 
-template <typename L, typename W, bool d>
-int Graph<L,W,d>::erase(const L& node)
+template <typename L, typename W, bool dir>
+int Graph<L,W,dir>::erase(const L& node)
 {
 	if (!contains(node))
-		return 0;
+		return -1;
 
 	int erased = adjacencies_[node].size();
 	adjacencies_.erase(node);
 
-	for (auto& assoc: adjacencies_)
-		erased += assoc.second.erase(node);
+	for (auto& assoc: adjacencies_) {
+		if constexpr (dir)
+			erased += assoc.second.erase(node);
+		else
+			assoc.second.erase(node);
+	}
 
 	return erased; // number of erased edges
 }

@@ -2,7 +2,7 @@ APP_NAME=libpygraphs
 
 CC = g++ -std=c++17
 CFLAGS = -Wall
-TEST_CFLAGS = -fsanitize=leak
+TEST_CFLAGS = -fsanitize=leak -g
 BUILD_CFLAGS = -fpic -DNDEBUG=1 -O2
 
 SC = swig
@@ -13,10 +13,11 @@ INT = libpygraphs.i
 GEN = libpygraphs_wrap.cxx
 OBJ = libpygraphs_wrap.o
 LIBS = -I/usr/include/python3.7m
-TST = main.cpp
+TST = test_graph.cpp
+
 
 default:
-	make build
+	make all
 
 build: $(INT) $(SRC)
 	$(SC) $(SFLAGS) $(INT)
@@ -28,6 +29,7 @@ test: $(TST) $(SRC)
 
 all:
 	make test
+	./test_$(APP_NAME).out
 	make build
 
 clean:

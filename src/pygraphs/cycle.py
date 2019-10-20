@@ -1,7 +1,7 @@
 # Copyright (c) 2019 Gabriel B. Sant'Anna <baiocchi.gabriel@gmail.com>
 # @License Apache <https://gitlab.com/baioc/pygraphs>
 
-from .graphs import Digraph, Graph
+from .libpygraphs import Digraph, Graph
 from typing import Set, Tuple, List, Optional, Sequence, TypeVar, Generator, \
                    Union, Dict, FrozenSet
 from math import inf
@@ -11,8 +11,7 @@ Node = str
 
 
 def eulerian_cycle(graph: Union[Graph, Digraph],
-                   initial: Optional[Node] = None,
-                   directed: bool = False) -> List[Node]:
+                   initial: Optional[Node] = None) -> List[Node]:
     """Finds an eulerian cycle on a graph using Hierholzer's algorithm.
 
     Returns a list representing the node path order of the eulerian cycle, it
@@ -33,8 +32,7 @@ def eulerian_cycle(graph: Union[Graph, Digraph],
 
     def Hierholzer(graph: Union[Graph, Digraph],
                    initial: Node,
-                   traversed: Set[Tuple[Node, Node]],
-                   directed: bool) -> List[Node]:
+                   traversed: Set[Tuple[Node, Node]]) -> List[Node]:
         def splicycle(cycle: List[T], subcycle: List[T]) -> List[T]:
             pos = cycle.index(subcycle[0])
             return cycle[:pos] + subcycle + cycle[pos+1:]
@@ -52,7 +50,7 @@ def eulerian_cycle(graph: Union[Graph, Digraph],
 
             (u, v) = e
             traversed.add(e)
-            if not directed:
+            if not graph.directed():
                 traversed.add((v, u))
             cycle.append(v)
             u = v
@@ -62,7 +60,7 @@ def eulerian_cycle(graph: Union[Graph, Digraph],
         for v in cycle:
             for w in graph.neighbours(v):
                 if (v, w) not in traversed:
-                    subcycle = Hierholzer(graph, v, traversed, directed)
+                    subcycle = Hierholzer(graph, v, traversed)
                     if len(subcycle) == 0:
                         return []
                     else:
@@ -72,7 +70,7 @@ def eulerian_cycle(graph: Union[Graph, Digraph],
 
     traversed: Set[Tuple[Node, Node]] = set()
     initial = arbitrary(graph.nodes()) if initial is None else initial
-    cycle = Hierholzer(graph, initial, traversed, directed)
+    cycle = Hierholzer(graph, initial, traversed)
     if len(cycle) == 0:
         return []
     else:

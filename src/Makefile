@@ -1,7 +1,7 @@
 APP_NAME = pygraphs
 
 SRCDIR = $(APP_NAME)
-SRC = setup.py LICENSE README.md \
+SRC = setup.py ../LICENSE ../README.md \
       $(SRCDIR)/__init__.py \
       $(SRCDIR)/libpygraphs.py \
       $(SRCDIR)/search.py \
