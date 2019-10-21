@@ -18,14 +18,15 @@ At this point, distributed packages are compatible with Linux only.
 ### Features
 
 - Efficient data structures written in modern C++ are available.
-  - Directed and Undirected Graph templates.
-  - Priority Queues using Heaps.
-  - Disjoint Sets.
+  - Directed and undirected Graphs.
+  - Priority Queue using binary heap.
+  - Disjoint Sets as linked lists.
 - Classic algorithms are implemented in Python with type annotations.
   - Breadth-First and Depth-First Searches.
   - Eulerian cycle in Hierholzer's algorithm.
   - Hamiltonian cycle (TSP) using Bellman-Held-Karp.
-  - Shortest Path with Bellman-Ford, Dijkstra and Floyd-Warshall algorithms.
+  - Shortest path with Bellman-Ford, Dijkstra and Floyd-Warshall algorithms.
+  - Minimum spanning trees through Prim.
 
 
 ## Build process

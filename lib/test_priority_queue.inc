@@ -6,7 +6,7 @@ using structures::PriorityQueue;
 #include <functional> // greater
 
 
-TEST_CASE("PriorityQueues maintain their elements sorted by lowest priority (default)", "[PriorityQueue]")
+TEST_CASE("PriorityQueues maintain their elements sorted", "[PriorityQueue]")
 {
 	PriorityQueue<char> q;
 	REQUIRE(q.empty());
@@ -64,11 +64,14 @@ TEST_CASE("PriorityQueues are templated to any sorting order", "[PriorityQueue][
 	q.enqueue('s', 1);
 	q.enqueue('t', 3);
 
+	REQUIRE(q.update('s', 2) == 1);
+	REQUIRE(q.priority('s') == 2);
+
 	REQUIRE(q.dequeue() == 'p');
 	REQUIRE(q.dequeue() == 'c');
 	REQUIRE(q.dequeue() == 't');
-	REQUIRE(q.dequeue() == 'z');
 	REQUIRE(q.dequeue() == 's');
+	REQUIRE(q.dequeue() == 'z');
 }
 
 TEMPLATE_TEST_CASE(
@@ -83,6 +86,9 @@ TEMPLATE_TEST_CASE(
 	q.enqueue(3, 3);
 	q.enqueue(4, 4);
 
-	for (auto it = q.items().begin(); it < q.items().end(); it++)
-		if (it + 1 != q.items().end()) REQUIRE(*it <= *(it + 1));
+	for (int i = 0; i < static_cast<int>(q.items().size()); ++i) {
+		REQUIRE(i == q.items()[i]);
+		if (i + 1 < static_cast<int>(q.items().size()))
+			REQUIRE(q.items()[i] <= q.items()[i+1]);
+	}
 }

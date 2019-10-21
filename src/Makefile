@@ -6,7 +6,8 @@ SRC = setup.py ../LICENSE ../README.md \
       $(SRCDIR)/libpygraphs.py \
       $(SRCDIR)/search.py \
       $(SRCDIR)/cycle.py \
-      $(SRCDIR)/path.py
+      $(SRCDIR)/path.py \
+      $(SRCDIR)/forest.py \
 
 OBJ = build/ \
       dist/ \

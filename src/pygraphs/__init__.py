@@ -9,3 +9,4 @@ Weight = _NewType('Weight', float)
 from .search import breadth_first_search, depth_first_search
 from .cycle import eulerian_cycle, hamiltonian_circuit
 from .path import shortest_path, shortest_route, shortest_network
+from .forest import minimum_spanning_forest

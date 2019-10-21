@@ -433,14 +433,20 @@ class PrioQ(object):
     def size(self):
         return _libpygraphs.PrioQ_size(self)
 
+    def front(self):
+        return _libpygraphs.PrioQ_front(self)
+
     def enqueue(self, arg2, arg3):
         return _libpygraphs.PrioQ_enqueue(self, arg2, arg3)
 
     def dequeue(self):
         return _libpygraphs.PrioQ_dequeue(self)
 
-    def front(self):
-        return _libpygraphs.PrioQ_front(self)
+    def priority(self, arg2):
+        return _libpygraphs.PrioQ_priority(self, arg2)
+
+    def update(self, arg2, arg3):
+        return _libpygraphs.PrioQ_update(self, arg2, arg3)
 
     def contains(self, arg2):
         return _libpygraphs.PrioQ_contains(self, arg2)

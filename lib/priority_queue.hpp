@@ -27,19 +27,23 @@ class PriorityQueue {
 	bool empty() const;
 	int size() const;
 
+	const T& front() const;
 	void enqueue(T, P);
 	T dequeue();
-	const T& front() const;
 
-	bool contains(const T&);
+	P priority(const T&) const;
+	P update(const T&, P);
+
+	bool contains(const T&) const;
 	std::vector<T> items() const;
 
  private:
-	int parent(int);
-	int children(int);
+	int parent(int) const;
+	int children(int) const;
 	void sift(int);
 	void sink(int);
-	static bool priorize(std::tuple<P,std::size_t,T>, std::tuple<P,std::size_t,T>);
+	static bool priorize(const std::tuple<P,std::size_t,T>&,
+	                     const std::tuple<P,std::size_t,T>&);
 
 	std::vector<std::tuple<P,std::size_t,T>> heap_;
 	std::size_t count_{0};
@@ -65,7 +69,7 @@ inline int PriorityQueue<T,P,F>::size() const
 }
 
 template <typename T, typename P, typename F>
-inline bool PriorityQueue<T,P,F>::contains(const T& elem)
+inline bool PriorityQueue<T,P,F>::contains(const T& elem) const
 {
 	for (const auto& entry: heap_)
 		if (std::get<2>(entry) == elem) return true;
@@ -81,21 +85,22 @@ const T& PriorityQueue<T,P,F>::front() const
 }
 
 template <typename T, typename P, typename F>
-inline int PriorityQueue<T,P,F>::parent(int child)
+inline int PriorityQueue<T,P,F>::parent(int child) const
 {
 	return (child - 1) / 2;
 }
 
 template <typename T, typename P, typename F>
-inline int PriorityQueue<T,P,F>::children(int parent)
+inline int PriorityQueue<T,P,F>::children(int parent) const
 {
 	return 2*parent + 1;
 }
 
 template <typename T, typename P, typename Comp>
 inline bool PriorityQueue<T,P,Comp>::priorize(
-	std::tuple<P,std::size_t,T> lhs, std::tuple<P,std::size_t,T> rhs)
-{
+	const std::tuple<P,std::size_t,T>& lhs,
+	const std::tuple<P,std::size_t,T>& rhs
+) {
 	// priority weights more, break tie via FIFO order
 	return Comp()(std::get<0>(lhs), std::get<0>(rhs))
 	       || (std::get<0>(lhs) == std::get<0>(rhs)
@@ -138,7 +143,7 @@ void PriorityQueue<T,P,F>::sink(int root)
 template <typename T, typename P, typename F>
 void PriorityQueue<T,P,F>::enqueue(T elem, P prio)
 {
-	auto entry = std::make_tuple(prio, count_++, std::move(elem));
+	auto entry = std::make_tuple(std::move(prio), count_++, std::move(elem));
 	heap_.emplace_back(std::move(entry));
 	sift(size() - 1);
 }
@@ -152,6 +157,39 @@ T PriorityQueue<T,P,F>::dequeue()
 	heap_.pop_back();
 	sink(0);
 	return top;
+}
+
+template <typename T, typename P, typename Comp>
+P PriorityQueue<T,P,Comp>::priority(const T& elem) const
+{
+	for (const auto& entry: heap_)
+		if (std::get<2>(entry) == elem) return std::get<0>(entry);
+	return P();
+}
+
+template <typename T, typename P, typename Comp>
+P PriorityQueue<T,P,Comp>::update(const T& elem, P prio)
+{
+	for (int idx = 0; idx < size(); ++idx) {
+		auto& entry = heap_[idx];
+		if (std::get<2>(entry) == elem) {
+			P old = std::get<0>(entry);
+
+			heap_[idx] = std::make_tuple(
+				std::move(prio),
+				std::get<1>(entry),
+				std::get<2>(entry)
+			);
+
+			if (Comp()(prio, old))
+				sift(idx);
+			else if (prio != old)
+				sink(idx);
+
+			return old;
+		}
+	}
+	return prio;
 }
 
 template <typename T, typename P, typename F>
