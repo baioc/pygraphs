@@ -1,12 +1,11 @@
 # Copyright (c) 2019 Gabriel B. Sant'Anna <baiocchi.gabriel@gmail.com>
 # @License Apache <https://gitlab.com/baioc/pygraphs>
 
-from .libpygraphs import Digraph, Graph
+from .libpygraphs import Digraph, Graph, PrioQ
+from .common import Node, graph_edges
 from typing import Set, Tuple, Dict, Optional, Generator, Union
 from math import inf
 from pprint import pprint
-
-Node = str
 
 
 def shortest_route(graph: Union[Graph, Digraph], start: Node) \
@@ -21,12 +20,6 @@ def shortest_route(graph: Union[Graph, Digraph], start: Node) \
 
     Raises a ValueError exception in case a negative cycle is found.
     """
-
-    def graph_edges(g: Union[Graph, Digraph]) \
-            -> Generator[Tuple[Node, Node], None, None]:
-        for u in g.nodes():
-            for v in g.neighbours(u):
-                yield (u, v)
 
     # initialize
     distances: Dict[Node, float] = dict.fromkeys(graph.nodes(), inf)
@@ -74,17 +67,16 @@ def shortest_path(graph: Union[Graph, Digraph], source: Node) \
     # initialize
     distances: Dict[Node, float] = {}
     antecessors: Dict[Node, Optional[Node]] = {}
-    unclosed: Set[Node] = set()  # TODO: an updateable min-heap would be better
+    unclosed = PrioQ(graph.node_number())
     for v in graph.nodes():
         distances[v] = inf if v != source else 0
         antecessors[v] = None
-        unclosed.add(v)
+        unclosed.enqueue(v, distances[v])
 
-    while len(unclosed) > 0:
-        u = min(unclosed, key=distances.get)
-        unclosed.remove(u)
+    while not unclosed.empty():
+        u = unclosed.dequeue()
         for v in graph.neighbours(u):
-            if v in unclosed:
+            if unclosed.contains(v):
                 # relax
                 Duv = distances[u] + graph.weight(u, v)
                 if Duv < distances[v]:
@@ -115,7 +107,7 @@ def shortest_network(graph: Union[Graph, Digraph]) \
     return dist
 
 
-def _path_test():
+def _test_path():
     V: Set[Node] = {'A', 'B', 'C', 'S'}
     E: Set[Tuple[Node, Node, float]] = {('S', 'A', 5), ('S', 'B', 3),
                                         ('B', 'A', 1),

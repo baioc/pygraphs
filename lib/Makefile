@@ -13,7 +13,7 @@ INT = libpygraphs.i
 GEN = libpygraphs_wrap.cxx
 OBJ = libpygraphs_wrap.o
 LIBS = -I/usr/include/python3.7m
-TST = test_graph.cpp
+TST = test_graph.inc test_priority_queue.inc
 
 
 default:
@@ -25,7 +25,7 @@ build: $(INT) $(SRC)
 	$(CC) -shared -o _$(APP_NAME).so $(OBJ)
 
 test: $(TST) $(SRC)
-	$(CC) $(CFLAGS) $(TEST_CFLAGS) -o test_$(APP_NAME).out $(TST)
+	$(CC) $(CFLAGS) $(TEST_CFLAGS) -o test_$(APP_NAME).out tests.cpp
 
 all:
 	make test
@@ -38,3 +38,4 @@ clean:
 	- rm $(APP_NAME)_wrap.cxx
 	- rm *.o
 	- rm _$(APP_NAME).so
+	- rm -R __pycache__/

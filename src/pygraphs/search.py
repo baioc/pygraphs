@@ -2,10 +2,10 @@
 # @License Apache <https://gitlab.com/baioc/pygraphs>
 
 from .libpygraphs import Graph, Digraph
-from typing import Set, Tuple, Dict, Optional, List, Union
+from .common import Node
+from typing import Set, Tuple, Dict, Optional, Union
 from math import inf
-
-Node = str
+from collections import deque
 
 
 def breadth_first_search(graph: Union[Graph, Digraph], root: Node) \
@@ -20,14 +20,14 @@ def breadth_first_search(graph: Union[Graph, Digraph], root: Node) \
 
     distances: Dict[Node, float] = dict.fromkeys(graph.nodes(), inf)
     ancestors: Dict[Node, Optional[Node]] = {}
-    queue: List[Node] = []
+    queue = deque()
 
     distances[root] = 0
     ancestors[root] = None
     queue.append(root)
 
     while len(queue) > 0:
-        u = queue.pop(0)
+        u = queue.popleft()
         for v in graph.neighbours(u):
             if v not in ancestors:  # hasn't been visited
                 distances[v] = distances[u] + 1
@@ -53,7 +53,7 @@ def depth_first_search(graph: Union[Graph, Digraph], root: Node) \
 
     times: Dict[Node, float] = dict.fromkeys(graph.nodes(), inf)
     ancestors: Dict[Node, Optional[Node]] = {}
-    stack: List[Node] = []
+    stack = deque()
 
     ancestors[root] = None
     stack.append(root)
@@ -75,10 +75,10 @@ def depth_first_search(graph: Union[Graph, Digraph], root: Node) \
     return (times, ancestors)
 
 
-def _search_test():
+def _test_search():
     V: Set[Node] = {'1', '2', '3', '4', '5', '6', '7', '8'}
     E: Set[Tuple[Node, Node]] = {('8', '3'), ('8', '4'),
-                                 ('8', '5'),  # ('1', '8'),
+                                 ('8', '5'), ('1', '8'),
                                  ('3', '1'), ('3', '2'),
                                  ('4', '6'), ('5', '7')}
     G: Union[Graph, Digraph] = Graph(len(V))

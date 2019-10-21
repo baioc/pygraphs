@@ -1,4 +1,4 @@
-# pygraphs
+# pygraphs on wheels
 
 A package for the study of graph discrete data structures and algorithms.
 
@@ -9,12 +9,10 @@ A package for the study of graph discrete data structures and algorithms.
 
 At this point, distributed packages are compatible with Linux only.
 
-1. Install via [pip](https://test.pypi.org/project/pygraphs/):
+1. Install via [pip](https://test.pypi.org/project/pygraphs/):</br>
+    ```pip install --user -i https://test.pypi.org/simple/ pygraphs```
 
-    ```python3 -m pip install --user --index-url https://test.pypi.org/simple/ --no-deps pygraphs```
-
-2. Import the package:
-
+2. Import the package:</br>
     ```import pygraphs as pyg```
 
 ### Features
@@ -34,4 +32,4 @@ At this point, distributed packages are compatible with Linux only.
 
 Source code is made available in [our git repo](https://gitlab.com/baioc/pygraphs).
 
-Data structures and some key operations are implemented in C++17 (compiled using GCC 9.1.0) and wrapped into Python 3.6+ with [Swig](http://www.swig.org/) (version 4.0.0).
+Data structures and some key operations are implemented in C++17 (compiled with gcc 9.1.0) and wrapped into Python 3.6+ with [Swig](http://www.swig.org/) (version 4.0.0).

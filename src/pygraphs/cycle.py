@@ -2,12 +2,11 @@
 # @License Apache <https://gitlab.com/baioc/pygraphs>
 
 from .libpygraphs import Digraph, Graph
+from .common import Node, graph_edges, arbitrary, T
 from typing import Set, Tuple, List, Optional, Sequence, TypeVar, Generator, \
                    Union, Dict, FrozenSet
 from math import inf
 from itertools import combinations
-
-Node = str
 
 
 def eulerian_cycle(graph: Union[Graph, Digraph],
@@ -17,18 +16,6 @@ def eulerian_cycle(graph: Union[Graph, Digraph],
     Returns a list representing the node path order of the eulerian cycle, it
     is empty when no such cycle is found.
     """
-
-    T = TypeVar('T')  # generic Type
-
-    def arbitrary(seq: Sequence[T]) -> T:
-        for x in seq:
-            return x
-
-    def graph_edges(g: Union[Graph, Digraph]) \
-            -> Generator[Tuple[Node, Node], None, None]:
-        for u in g.nodes():
-            for v in g.neighbours(u):
-                yield (u, v)
 
     def Hierholzer(graph: Union[Graph, Digraph],
                    initial: Node,
@@ -81,17 +68,18 @@ def eulerian_cycle(graph: Union[Graph, Digraph],
             return cycle
 
 
-def hamiltonian_circuit(graph: Union[Graph, Digraph], begin: Node) -> float:
+def hamiltonian_circuit(graph: Union[Graph, Digraph], begin: Node) \
+        -> Tuple[float, List[Node]]:
     """Finds a graph's minimal hamiltonian circuit through Bellman-Held-Karp.
 
     Supposes the graph is connected and has at least one hamiltonian cycle.
 
-    Returns the total cost of the optimal circuit path; or infinity when none
-    is found.
+    Returns a tuple containing the total cost of the optimal circuit path
+    and the path itself as a list (infinity and [] when none is found).
     """
 
-    Visits, FinalDestination, Cost = FrozenSet[Node], Node, float
-    cost: Dict[Tuple[Visits, FinalDestination], Cost] = {}
+    # Visits, FinalDestination, Cost = FrozenSet[Node], Node, float
+    cost: Dict[Tuple[FrozenSet[Node], Node], float] = {}
     dests = frozenset({v for v in graph.nodes() if v != begin})
 
     for place in dests:
@@ -110,18 +98,37 @@ def hamiltonian_circuit(graph: Union[Graph, Digraph], begin: Node) -> float:
     minimum = inf
     for end in dests:
         minimum = min(minimum, cost[(dests, end)] + graph.weight(end, begin))
-    return minimum
+
+    # check if no circuit was found
+    if minimum == inf:
+        return (inf, [])
+
+    # backtrack to find full path
+    circuit = minimum
+    path: List[Node] = [begin]
+
+    for _ in range(graph.node_number() - 1):
+        for (route, final), opt in cost.items():
+            if (circuit - graph.weight(final, path[-1]) == opt):
+                path.append(final)
+                circuit = opt
+                break
+
+    path.append(begin)
+    path.reverse()
+
+    return (minimum, path)
 
 
-def _cycle_test():
+def _test_cycle():
     V: Set[Node] = {'a', 'b', 'c', 'd', 'e'}
-    E: Set[Tuple[Node, Node, float]] = {('b', 'a', 2.5),  # ('a', 'c', 3),
-                                        ('c', 'd', 2.5),  # ('d', 'b', 1),
+    E: Set[Tuple[Node, Node, float]] = {('b', 'a', 2.5), ('a', 'c', 3),
+                                        ('c', 'd', 2.5), ('d', 'b', 1),
                                         ('a', 'e', 4), ('e', 'c', 2),
                                         ('e', 'b', 1.5), ('d', 'e', 2)}
     G: Union[Graph, Digraph] = Graph(len(V))
     for (u, v, w) in E:
         G.link(u, v, w)
 
-    C = eulerian_cycle(G, 'a')
+    C = hamiltonian_circuit(G, 'a')
     print(C)

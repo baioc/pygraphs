@@ -9,41 +9,41 @@
 #include <unordered_map>
 #include <utility> // move, pair
 #include <limits> // infinity
+#include <cassert>
 
 
 namespace structures {
 
 using std::unordered_map;
 
-
 template <typename Label, typename Weight, bool direct=false>
 	// requires Hashable<Label>,
 	//          LessThanComparable<Weight>,
 	//          std::numeric_limits<Weight>::has_infinity(),
-	//          Assignable<Weight,1>, Assignable<Weight,0>,
+	//          Assignable<Weight,1>, Assignable<Weight,0>
 class Graph {
  public:
 	Graph() = default;
 	explicit Graph(int);
 
-	constexpr bool directed() const; // O(1)
+	constexpr bool directed() const;
 
-	int node_number() const; // O(1)
-	int edge_number() const; // O(1)
+	int node_number() const;
+	int edge_number() const;
 
-	bool insert(Label); // O(1)
-	int erase(const Label&); // O(V)
+	bool insert(Label);
+	int erase(const Label&);
 
-	int link(const Label&, const Label&, Weight=1); // O(1)
-	int unlink(const Label&, const Label&); // O(1)
+	int link(const Label&, const Label&, Weight=1);
+	int unlink(const Label&, const Label&);
 
-	bool contains(const Label&) const; // O(1)
-	int degree(const Label&) const; // directed ? O(V) : O(1)
-	int degree_out(const Label&) const; // O(1)
-	int degree_in(const Label&) const; // directed ? O(V) : O(1)
+	bool contains(const Label&) const;
+	int degree(const Label&) const;
+	int degree_out(const Label&) const;
+	int degree_in(const Label&) const;
 
-	bool contains(const Label&, const Label&) const; // O(1)
-	Weight weight(const Label&, const Label&) const; // O(1)
+	bool contains(const Label&, const Label&) const;
+	Weight weight(const Label&, const Label&) const;
 
 	// returning vectors or using output iterators would be cleaner; the
 	// intention is that these methods return some iterable in constant time
@@ -60,6 +60,7 @@ class Graph {
 template <typename L, typename W, bool d>
 Graph<L,W,d>::Graph(int node_capacity)
 {
+	assert(node_capacity > 0);
 	adjacencies_.reserve(node_capacity);
 }
 

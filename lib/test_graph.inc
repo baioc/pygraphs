@@ -1,4 +1,3 @@
-#define CATCH_CONFIG_MAIN
 #include <catch2/catch.hpp>
 
 #include "graph.hpp"
@@ -122,6 +121,11 @@ TEST_CASE("any pair of different nodes can be linked and unlinked in a Graph", "
 	SECTION("weights are optional and if ommited default to 1") {
 		g.link('d', 'e');
 		REQUIRE(g.weight('d', 'e') == 1.0);
+
+		SECTION("reflexive edges are ignored and such a weight is always zero") {
+			REQUIRE(g.link('a', 'a', 25) == 0);
+			REQUIRE(g.weight('a', 'a') == 0);
+		}
 	}
 
 	SECTION("vertices can be explicitly inserted before connecting them") {

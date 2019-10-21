@@ -1,4 +1,4 @@
-from .libpygraphs import Graph, Digraph
+from .libpygraphs import Graph, Digraph, PrioQ
 
 from math import inf
 from typing import NewType as _NewType
