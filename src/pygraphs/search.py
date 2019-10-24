@@ -3,7 +3,7 @@
 
 from .libpygraphs import Graph, Digraph
 from .common import Node
-from typing import Set, Tuple, Dict, Optional, Union
+from typing import Set, Tuple, Dict, Optional, Union, List
 from math import inf
 from collections import deque
 
@@ -53,7 +53,7 @@ def depth_first_search(graph: Union[Graph, Digraph], root: Node) \
 
     times: Dict[Node, float] = dict.fromkeys(graph.nodes(), inf)
     ancestors: Dict[Node, Optional[Node]] = {}
-    stack = deque()
+    stack: List[Node] = []
 
     ancestors[root] = None
     stack.append(root)
@@ -85,7 +85,7 @@ def _test_search():
     for (u, v) in E:
         G.link(u, v)
 
-    D, T = breadth_first_search(G, '8')
+    D, T = depth_first_search(G, '8')
     print(D)
     print(T)
 
