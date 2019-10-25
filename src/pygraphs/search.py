@@ -3,76 +3,48 @@
 
 from .libpygraphs import Graph, Digraph
 from .common import Node
-from typing import Set, Tuple, Dict, Optional, Union, List
-from math import inf
+from typing import Union, Generator, Tuple, Set, List
 from collections import deque
 
 
-def breadth_first_search(graph: Union[Graph, Digraph], root: Node) \
-        -> Tuple[Dict[Node, float], Dict[Node, Optional[Node]]]:
-    """Breadth-first search a graph starting from a given vertex.
+def breadth_first(graph: Union[Graph, Digraph], root: Node) \
+        -> Generator[Tuple[Node, int, Node], None, None]:
+    """Traverse a graph's nodes breadth-first starting from given vertex.
+    Yields a tuple containing each visited node (except starting one), together
+    with the depth level it was found and its search tree antecessor. O(V+E)"""
 
-    Returns a dictionary tuple whose first element contains nodes as keys that
-    map to their distance from the start, in edge units; and whose second
-    element contains nodes as keys that map to their parent node in the search
-    tree.
-    """
-
-    distances: Dict[Node, float] = dict.fromkeys(graph.nodes(), inf)
-    ancestors: Dict[Node, Optional[Node]] = {}
+    visited: Set[Node] = {root}
     queue = deque()
-
-    distances[root] = 0
-    ancestors[root] = None
-    queue.append(root)
+    queue.append((root, 0))
 
     while len(queue) > 0:
-        u = queue.popleft()
+        (u, depth) = queue.popleft()
         for v in graph.neighbours(u):
-            if v not in ancestors:  # hasn't been visited
-                distances[v] = distances[u] + 1
-                ancestors[v] = u
-                queue.append(v)
-
-    # disconnected vertices
-    for v in distances:
-        if v not in ancestors:
-            ancestors[v] = None
-
-    return (distances, ancestors)
+            if v not in visited:
+                yield (v, depth + 1, u)
+                visited.add(v)
+                queue.append((v, depth + 1))
 
 
-def depth_first_search(graph: Union[Graph, Digraph], root: Node) \
-        -> Tuple[Dict[Node, float], Dict[Node, Optional[Node]]]:
-    """Depth-first search a graph starting from a given vertex.
+def depth_first(graph: Union[Graph, Digraph], root: Node) \
+        -> Generator[Tuple[Node, int, Node], None, None]:
+    """Traverse a graph's nodes depth-first starting from given vertex.
+    Yields a tuple containing each visited node (except starting one), together
+    with the depth level it was found and its search tree antecessor. O(V+E)"""
 
-    Returns a dictionary tuple whose first element contains nodes as keys that
-    map to the time taken to reach them; and whose second element contains
-    nodes as keys that map to their parent node in the search tree.
-    """
+    visited: Set[Node] = {root}
+    stack: List[Tuple[Node, int, Node]] = []
+    for v in graph.neighbours(root):
+        visited.add(v)
+        stack.append((v, 1, root))
 
-    times: Dict[Node, float] = dict.fromkeys(graph.nodes(), inf)
-    ancestors: Dict[Node, Optional[Node]] = {}
-    stack: List[Node] = []
-
-    ancestors[root] = None
-    stack.append(root)
-
-    t = -1  # next t is 0
     while len(stack) > 0:
-        u = stack.pop()
-        times[u] = t = t + 1
+        (u, depth, antecessor) = stack.pop()
+        yield (u, depth, antecessor)
         for v in graph.neighbours(u):
-            if v not in ancestors:  # hasn't been visited
-                ancestors[v] = u
-                stack.append(v)
-
-    # disconnected vertices
-    for v in times:
-        if v not in ancestors:
-            ancestors[v] = None
-
-    return (times, ancestors)
+            if v not in visited:
+                visited.add(v)
+                stack.append((v, depth + 1, u))
 
 
 def _test_search():
@@ -81,20 +53,10 @@ def _test_search():
                                  ('8', '5'), ('1', '8'),
                                  ('3', '1'), ('3', '2'),
                                  ('4', '6'), ('5', '7')}
-    G: Union[Graph, Digraph] = Graph(len(V))
+
+    G: Union[Graph, Digraph] = Digraph(len(V))
     for (u, v) in E:
         G.link(u, v)
 
-    D, T = depth_first_search(G, '8')
-    print(D)
-    print(T)
-
-    level = 0
-    while True:
-        nodes = [v for v, d in D.items() if d == level]
-        if len(nodes) > 0:
-            nodes.sort()
-            print('%d: %s' % (level, ', '.join(nodes)))
-            level += 1
-        else:
-            break
+    for (node, depth, antecessor) in depth_first(G, '8'):
+        print(node, depth, antecessor)

@@ -2,29 +2,23 @@
 # @License Apache <https://gitlab.com/baioc/pygraphs>
 
 from .libpygraphs import Digraph, Graph
-from .common import Node, graph_edges, arbitrary, T
-from typing import Set, Tuple, List, Optional, Sequence, TypeVar, Generator, \
-                   Union, Dict, FrozenSet
+from .common import Node, graph_edges, arbitrary
+from typing import Union, Optional, Sequence, Tuple, List, Set, Dict, FrozenSet
 from math import inf
 from itertools import combinations
 
 
-def eulerian_cycle(graph: Union[Graph, Digraph],
-                   initial: Optional[Node] = None) -> List[Node]:
+def eulerian_cycle(graph: Union[Graph, Digraph], start: Optional[Node] = None) \
+        -> Optional[Sequence[Node]]:
     """Finds an eulerian cycle on a graph using Hierholzer's algorithm.
+    Returns a list representing the node trail or None when no such cycle
+    is found. O(E)"""
 
-    Returns a list representing the node path order of the eulerian cycle, it
-    is empty when no such cycle is found.
-    """
+    traversed: Set[Tuple[Node, Node]] = set()
 
-    def Hierholzer(graph: Union[Graph, Digraph],
-                   initial: Node,
-                   traversed: Set[Tuple[Node, Node]]) -> List[Node]:
-        def splicycle(cycle: List[T], subcycle: List[T]) -> List[T]:
-            pos = cycle.index(subcycle[0])
-            return cycle[:pos] + subcycle + cycle[pos+1:]
-
+    def Hierholzer(initial: Node) -> List[Node]:
         cycle = [initial]
+
         u = initial
         while True:
             e = None
@@ -33,13 +27,15 @@ def eulerian_cycle(graph: Union[Graph, Digraph],
                     e = (u, v)
                     break
             else:  # no break: every edge (u,v) has already been traversed
-                return []
+                return None
 
             (u, v) = e
+            cycle.append(v)
+
             traversed.add(e)
             if not graph.directed():
                 traversed.add((v, u))
-            cycle.append(v)
+
             u = v
             if u == initial:
                 break
@@ -47,43 +43,41 @@ def eulerian_cycle(graph: Union[Graph, Digraph],
         for v in cycle:
             for w in graph.neighbours(v):
                 if (v, w) not in traversed:
-                    subcycle = Hierholzer(graph, v, traversed)
-                    if len(subcycle) == 0:
-                        return []
+                    subcycle = Hierholzer(v)
+                    if subcycle is None:
+                        return subcycle
                     else:
-                        cycle = splicycle(cycle, subcycle)
+                        # splice internal subcycle into full cycle
+                        pos = cycle.index(subcycle[0])
+                        cycle =  cycle[:pos] + subcycle + cycle[pos+1:]
 
         return cycle
 
-    traversed: Set[Tuple[Node, Node]] = set()
-    initial = arbitrary(graph.nodes()) if initial is None else initial
-    cycle = Hierholzer(graph, initial, traversed)
-    if len(cycle) == 0:
-        return []
-    else:
-        for (u, v) in graph_edges(graph):
-            if (u, v) not in traversed:
-                return []
-        else:  # no break
-            return cycle
+    start = arbitrary(graph.nodes()) if start is None else start
+    cycle = Hierholzer(start)
+
+    if cycle is None:
+        return cycle
+
+    for (u, v) in graph_edges(graph):
+        if (u, v) not in traversed:
+            return None
+
+    return cycle
 
 
-def hamiltonian_circuit(graph: Union[Graph, Digraph], begin: Node) \
-        -> Tuple[float, List[Node]]:
-    """Finds a graph's minimal hamiltonian circuit through Bellman-Held-Karp.
-
-    Supposes the graph is connected and has at least one hamiltonian cycle.
-
-    Returns a tuple containing the total cost of the optimal circuit path
-    and the path itself as a list (infinity and [] when none is found).
-    """
+def hamiltonian_circuit(graph: Union[Graph, Digraph], start: Node) \
+        -> Optional[Tuple[Sequence[Node], float]]:
+    """Finds a graph's minimal hamiltonian circuit through Held-Karp.
+    Returns a tuple containing the optimal tour and its cost or None if there's
+    no such cycle. O(2^V * V^2)"""
 
     # Visits, FinalDestination, Cost = FrozenSet[Node], Node, float
     cost: Dict[Tuple[FrozenSet[Node], Node], float] = {}
-    dests = frozenset({v for v in graph.nodes() if v != begin})
+    dests = frozenset({v for v in graph.nodes() if v != start})
 
     for place in dests:
-        cost[(frozenset({place}), place)] = graph.weight(begin, place)
+        cost[(frozenset({place}), place)] = graph.weight(start, place)
 
     for size in range(2, graph.node_number()):
         for itinerary in combinations(dests, size):
@@ -97,15 +91,15 @@ def hamiltonian_circuit(graph: Union[Graph, Digraph], begin: Node) \
 
     minimum = inf
     for end in dests:
-        minimum = min(minimum, cost[(dests, end)] + graph.weight(end, begin))
+        minimum = min(minimum, cost[(dests, end)] + graph.weight(end, start))
 
     # check if no circuit was found
     if minimum == inf:
-        return (inf, [])
+        return None
 
     # backtrack to find full path
     circuit = minimum
-    path: List[Node] = [begin]
+    path: List[Node] = [start]
 
     for _ in range(graph.node_number() - 1):
         for (route, final), opt in cost.items():
@@ -114,21 +108,21 @@ def hamiltonian_circuit(graph: Union[Graph, Digraph], begin: Node) \
                 circuit = opt
                 break
 
-    path.append(begin)
+    path.append(start)
     path.reverse()
 
-    return (minimum, path)
+    return (path, minimum)
 
 
 def _test_cycle():
     V: Set[Node] = {'a', 'b', 'c', 'd', 'e'}
-    E: Set[Tuple[Node, Node, float]] = {('b', 'a', 2.5), ('a', 'c', 3),
-                                        ('c', 'd', 2.5), ('d', 'b', 1),
+    E: Set[Tuple[Node, Node, float]] = {('b', 'a', 2.5), # ('a', 'c', 3),
+                                        ('c', 'd', 2.5), # ('d', 'b', 1),
                                         ('a', 'e', 4), ('e', 'c', 2),
                                         ('e', 'b', 1.5), ('d', 'e', 2)}
     G: Union[Graph, Digraph] = Graph(len(V))
     for (u, v, w) in E:
         G.link(u, v, w)
 
-    C = hamiltonian_circuit(G, 'a')
+    C = eulerian_cycle(G, 'a')
     print(C)

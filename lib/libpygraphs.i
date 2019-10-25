@@ -9,7 +9,6 @@
 // wrap standard headers
 %include "std_string.i"
 %include "std_unordered_map.i"
-%include "std_vector.i"
 
 // ignores
 //
@@ -24,7 +23,7 @@
 %template(GraphEdges) std::unordered_map<std::string,double>;
 %template(GraphNodes) std::unordered_map<std::string,std::unordered_map<std::string,double>>;
 %template(PrioQ) structures::PriorityQueue<std::string, float>;
-%template(Labels) std::vector<std::string>;
+%template(PrioItems) std::unordered_map<std::string,int>;
 
 // type mapping
 //

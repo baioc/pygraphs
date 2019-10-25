@@ -4,14 +4,13 @@ SRCDIR = $(APP_NAME)
 SRC = setup.py ../LICENSE ../README.md \
       $(SRCDIR)/__init__.py \
       $(SRCDIR)/libpygraphs.py \
+      $(SRCDIR)/common.py \
       $(SRCDIR)/search.py \
       $(SRCDIR)/cycle.py \
       $(SRCDIR)/path.py \
-      $(SRCDIR)/forest.py \
+      $(SRCDIR)/forest.py
 
-OBJ = build/ \
-      dist/ \
-      $(APP_NAME).egg-info/
+OBJ = build/ dist/ $(APP_NAME).egg-info/
 
 default:
 	make build

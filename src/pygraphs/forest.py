@@ -1,21 +1,16 @@
 # Copyright (c) 2019 Gabriel B. Sant'Anna <baiocchi.gabriel@gmail.com>
 # @License Apache <https://gitlab.com/baioc/pygraphs>
 
-from .libpygraphs import Graph, PrioQ, Digraph
+from .libpygraphs import Digraph, Graph, PrioQ
 from .common import Node, arbitrary
-from typing import Set, Tuple, Dict, Optional, Sequence, List, Iterable
+from typing import Set, Tuple, Dict, Optional, Sequence, Iterable, List
 from math import inf
 from collections import deque
 
 
-def minimum_spanning_forest(graph: Graph, start: Node = None) \
-        -> Dict[Node, Optional[Node]]:
-    """
-    Find the minimum spanning forest of an undirected graph via Prim.
-
-    Returns a dictionary containing nodes as keys that map to their parent
-    node in the tree they're in.
-    """
+def min_tree(graph: Graph, start: Node = None) -> Set[Tuple[Node, Node, float]]:
+    """Find the minimum spanning tree of an undirected graph through Prim.
+    Returns a set containing every edge in the MSP.  O((V+E)*lg(V))"""
 
     start = arbitrary(graph.nodes()) if start is None else start
     ancestors: Dict[Node, Optional[Node]] = {}
@@ -27,85 +22,79 @@ def minimum_spanning_forest(graph: Graph, start: Node = None) \
     while not queue.empty():
         u = queue.dequeue()
         for v in graph.neighbours(u):
-            if queue.contains(v) and graph.weight(u, v) < queue.priority(v):
+            w = graph.weight(u, v)
+            if queue.contains(v) and w < queue.priority(v):
                 ancestors[v] = u
-                queue.update(v, graph.weight(u, v))
+                queue.update(v, w)
 
-    return ancestors
+    forest: Set[Tuple[Node, Node, float]] = set()
+    for (child, root) in ancestors.items():
+        if root is not None:
+            forest.add((root, child, graph.weight(root, child)))
+
+    return forest
 
 
 def toposort(graph: Digraph) -> Sequence[Node]:
     """Topologically sort a directed graph's vertices using Tarjan's DFS.
-    Returns a sequence containing the result of the partial ordering."""
-
-    def dfs_ord(graph: Digraph, root: Node, visited: Set[Node], order):
-        if root in visited:
-            return
-
-        visited.add(root)
-        for v in graph.neighbours(root):
-            dfs_ord(graph, v, visited, order)
-
-        order.insert(0, root)
+    Returns a sequence containing the result of the partial ordering. O(V+E)"""
 
     visited: Set[Node] = set()
     order = deque()
+
+    def dfs_ord(u: Node):
+        if u not in visited:
+            visited.add(u)
+
+            for v in graph.neighbours(u):
+                dfs_ord(v)
+
+            order.appendleft(u)
+
     for u in graph.nodes():
-        dfs_ord(graph, u, visited, order)
+        dfs_ord(u)
 
     return order
 
 
-def connected_components(graph: Digraph) -> Iterable[Set[Node]]:
-    """
-    Find a digraph's strongly connected components using Kosaraju's algorithm.
-
-    Returns an iterable containing each component of the graph's partitioning.
-    """
-
-    def dfs_visit(graph: Digraph,
-                  root: Node,
-                  visited: Set[Node],
-                  stack: List[Node],
-                  connections: Dict[Node, Set[Node]]):
-        if root not in visited:
-            visited.add(root)
-
-            for child in graph.neighbours(root):
-                connections[child].add(root)
-                dfs_visit(graph, child, visited, stack, connections)
-
-            stack.append(root)
-
-    def component_assign(child: Node,
-                         root: Node,
-                         components: Dict[Node, Set[Node]],
-                         connections: Dict[Node, Set[Node]]):
-        if child in connections.keys():
-            if root not in components:
-                components[root] = set()
-
-            components[root].add(child)
-
-            neighbours = connections[child]
-            connections.pop(child)
-
-            for neighbour in neighbours:
-                component_assign(neighbour, root, components, connections)
+def components(graph: Digraph) -> Iterable[Set[Node]]:
+    """Find a digraph's strongly connected components via Kosaraju's algorithm.
+    Returns an iterable containing each partition. O(V+E)"""
 
     visited: Set[Node] = set()
     stack: List[Node] = []
     connections: Dict[Node, Set[Node]] = {v: set() for v in graph.nodes()}
+    components: Dict[Node, Set[Node]] = {}
+
+    def dfs_visit(u: Node):
+        if u not in visited:
+            visited.add(u)
+
+            for v in graph.neighbours(u):
+                connections[v].add(u)
+                dfs_visit(v)
+
+            stack.append(u)
+
+    def component_assign(u: Node, root: Node):
+        if u in connections.keys():
+            if root not in components:
+                components[root] = set()
+
+            components[root].add(u)
+
+            in_neighbours = connections[u]
+            connections.pop(u)
+
+            for v in in_neighbours:
+                component_assign(v, root)
 
     for u in graph.nodes():
-        if u not in visited:
-            dfs_visit(graph, u, visited, stack, connections)
-
-    components: Dict[Node, Set[Node]] = {}
+        dfs_visit(u)
 
     while len(stack) > 0:
         u = stack.pop()
-        component_assign(u, u, components, connections)
+        component_assign(u, u)
 
     return components.values()
 
@@ -119,7 +108,7 @@ def _test_forest():
     for (u, v, w) in E:
         G.link(u, v, w)
 
-    A = minimum_spanning_forest(G, 'a')
+    A = min_tree(G, 'a')
     print(A)
 
 
@@ -148,4 +137,4 @@ def _test_connect():
     for (u, v) in E:
         G.link(u, v)
 
-    print(connected_components(G))
+    print(components(G))

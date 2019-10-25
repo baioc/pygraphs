@@ -4,6 +4,7 @@
 using structures::PriorityQueue;
 
 #include <functional> // greater
+#include <vector>
 
 
 TEST_CASE("PriorityQueues maintain their elements sorted", "[PriorityQueue]")
@@ -86,9 +87,13 @@ TEMPLATE_TEST_CASE(
 	q.enqueue(3, 3);
 	q.enqueue(4, 4);
 
-	for (int i = 0; i < static_cast<int>(q.items().size()); ++i) {
-		REQUIRE(i == q.items()[i]);
-		if (i + 1 < static_cast<int>(q.items().size()))
-			REQUIRE(q.items()[i] <= q.items()[i+1]);
+	std::vector<TestType> v;
+	for (auto item: q.items())
+		v.push_back(item.first);
+
+	for (int i = 0; i < static_cast<int>(v.size()); ++i) {
+		REQUIRE(i == v[i]);
+		if (i + 1 < static_cast<int>(v.size()))
+			REQUIRE(v[i] <= v[i+1]);
 	}
 }

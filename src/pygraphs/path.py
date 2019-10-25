@@ -1,30 +1,30 @@
 # Copyright (c) 2019 Gabriel B. Sant'Anna <baiocchi.gabriel@gmail.com>
 # @License Apache <https://gitlab.com/baioc/pygraphs>
 
-from .libpygraphs import Digraph, Graph, PrioQ
+from .libpygraphs import Graph, Digraph, PrioQ
 from .common import Node, graph_edges
-from typing import Set, Tuple, Dict, Optional, Generator, Union
+from typing import Union, Dict, Tuple, Sequence, Optional, Set
 from math import inf
 from pprint import pprint
 
 
-def shortest_route(graph: Union[Graph, Digraph], start: Node) \
-        -> Tuple[Dict[Node, float], Dict[Node, Optional[Node]]]:
+def shortest_routes(graph: Union[Graph, Digraph], start: Node) \
+        -> Dict[Node, Tuple[Sequence[Node], float]]:
     """
-    Compute shortest paths from a single vertex to all others in a graph using
-    the Bellman-Ford algorithm.
-
-    Returns a dictionary tuple whose first element contains nodes as keys that
-    map to their distance from the start; and whose second element contains
-    nodes as keys that map to their antecessor in the shortest-path tree.
-
-    Raises a ValueError exception in case a negative cycle is found.
+    Compute shortest routes from a single vertex to all others in a graph
+    using the Bellman-Ford algorithm.
+    Returns a dictionary containing nodes as keys that map to tuples with the
+    shortest path found to them and the path's cost. Disconnected vertices are
+    mapped to (None, inf).
+    Raises a ValueError exception in case a negative cycle is found. O(V*E)
     """
 
     # initialize
-    distances: Dict[Node, float] = dict.fromkeys(graph.nodes(), inf)
+    distances: Dict[Node, float] = {}
     antecessors: Dict[Node, Optional[Node]] = {}
-    distances[start] = 0
+    for v in graph.nodes():
+        distances[v] = inf if v != start else 0
+        antecessors[v] = None
 
     for _ in range(1, graph.node_number()):
         done = True
@@ -41,27 +41,20 @@ def shortest_route(graph: Union[Graph, Digraph], start: Node) \
     # report negative cycle
     for (u, v) in graph_edges(graph):
         if distances[u] + graph.weight(u, v) < distances[v]:
-            raise ValueError("Negative cycle detected")
+            raise ValueError("Negative cycle found near ({}, {})".format(u,v))
 
-    # disconnected vertices
-    for v in distances:
-        if v not in antecessors:
-            antecessors[v] = None
-
-    return (distances, antecessors)
+    return _pathmap(distances, antecessors)
 
 
-def shortest_path(graph: Union[Graph, Digraph], source: Node) \
-        -> Tuple[Dict[Node, float], Dict[Node, Optional[Node]]]:
+def shortest_paths(graph: Union[Graph, Digraph], source: Node) \
+        -> Dict[Node, Tuple[Sequence[Node], float]]:
     """
-    Use Dijkstra's Shortest Path First algorithm to find the shortest path
+    Use Dijkstra's Shortest Path First algorithm to find the shortest paths
     between a given origin and all other nodes in a graph.
-
     Does not guarantee a shortest path when presented with negative weights.
-
-    Returns a dictionary tuple whose first element contains nodes as keys that
-    map to their distance from the source; and whose second element contains
-    nodes as keys that map to their antecessor in the shortest-path tree.
+    Returns a dictionary containing nodes as keys that map to tuples with the
+    shortest path found to them and the path's cost. Disconnected vertices are
+    mapped to (None, inf). O((V+E)*lg(V))
     """
 
     # initialize
@@ -69,9 +62,10 @@ def shortest_path(graph: Union[Graph, Digraph], source: Node) \
     antecessors: Dict[Node, Optional[Node]] = {}
     unclosed = PrioQ(graph.node_number())
     for v in graph.nodes():
-        distances[v] = inf if v != source else 0
+        d = inf if v != source else 0
+        distances[v] = d
         antecessors[v] = None
-        unclosed.enqueue(v, distances[v])
+        unclosed.enqueue(v, d)
 
     while not unclosed.empty():
         u = unclosed.dequeue()
@@ -80,19 +74,18 @@ def shortest_path(graph: Union[Graph, Digraph], source: Node) \
                 # relax
                 Duv = distances[u] + graph.weight(u, v)
                 if Duv < distances[v]:
-                    distances[v] = Duv
                     antecessors[v] = u
+                    distances[v] = Duv
+                    unclosed.update(v, Duv)
 
-    return (distances, antecessors)
+    return _pathmap(distances, antecessors)
 
 
 def shortest_network(graph: Union[Graph, Digraph]) \
         -> Dict[Node, Dict[Node, float]]:
     """Find shortest paths for all vertex pairs in a graph via Floyd-Warshall.
-
     Returns a bidimensional dictionary D that uses node labels as indexes such
-    that D[u][v] is the shortest circuit cost going from u to v.
-    """
+    that D[u][v] is the shortest circuit cost going from u to v. O(V^3)"""
 
     vertices = graph.nodes()
     dist = {u: {v: graph.weight(u, v) for v in vertices} for u in vertices}
@@ -107,6 +100,29 @@ def shortest_network(graph: Union[Graph, Digraph]) \
     return dist
 
 
+def _pathmap(distances: Dict[Node, float],
+             antecessors: Dict[Node, Optional[Node]]) \
+        -> Dict[Node, Tuple[Sequence[Node], float]]:
+    paths: Dict[Node, Tuple[Sequence[Node], float]] = {}
+
+    for (dest, dist) in distances.items():
+        if dist < inf:
+            path: List[Node] = []
+
+            last = dest
+            while not last is None:
+                path.append(last)
+                last = antecessors[last]
+
+            path.reverse()
+            paths[dest] = (path, dist)
+
+        else:
+            paths[dest] = (None, inf)
+
+    return paths
+
+
 def _test_path():
     V: Set[Node] = {'A', 'B', 'C', 'S'}
     E: Set[Tuple[Node, Node, float]] = {('S', 'A', 5), ('S', 'B', 3),
@@ -116,15 +132,5 @@ def _test_path():
     for (u, v, w) in E:
         G.link(u, v, w)
 
-    (D, T) = shortest_path(G, 'S')
-    for v in V:
-        path = []
-        tail = v
-        while tail is not None:
-            path.insert(0, tail)
-            tail = T[tail]
-
-        print('<%s> = %g' % (', '.join(path), D[v]))
-
-    N = shortest_network(G)
+    N = shortest_paths(G, 'S')
     pprint(N)

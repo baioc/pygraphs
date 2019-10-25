@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <tuple>
+#include <map>
 #include <functional> // less
 #include <utility> // move, size_t
 #include <algorithm> // swap, transform
@@ -17,8 +18,7 @@
 namespace structures {
 
 template <typename T, typename P = int, typename F = std::less<P>>
-	// requires CopyConstructible<T>, MoveInsertable<T>, Comparable<T>,
-	//          Comparable<P>
+	// requires Hashable<T>, Comparable<P>, DefaultConstructible<P>
 class PriorityQueue {
  public:
 	PriorityQueue() = default;
@@ -31,11 +31,12 @@ class PriorityQueue {
 	void enqueue(T, P);
 	T dequeue();
 
+	bool contains(const T&) const;
 	P priority(const T&) const;
 	P update(const T&, P);
 
-	bool contains(const T&) const;
-	std::vector<T> items() const;
+	// iterable container with ordered items
+	const std::map<T,int>& items() const;
 
  private:
 	int parent(int) const;
@@ -44,8 +45,10 @@ class PriorityQueue {
 	void sink(int);
 	static bool priorize(const std::tuple<P,std::size_t,T>&,
 	                     const std::tuple<P,std::size_t,T>&);
+	void exchange(int, int);
 
 	std::vector<std::tuple<P,std::size_t,T>> heap_;
+	std::map<T,int> index_map_;
 	std::size_t count_{0};
 };
 
@@ -53,6 +56,7 @@ class PriorityQueue {
 template <typename T, typename P, typename F>
 PriorityQueue<T,P,F>::PriorityQueue(int size)
 {
+	assert(size > 0);
 	heap_.reserve(size);
 }
 
@@ -65,16 +69,13 @@ inline bool PriorityQueue<T,P,F>::empty() const
 template <typename T, typename P, typename F>
 inline int PriorityQueue<T,P,F>::size() const
 {
-	return heap_.size();
+	return static_cast<int>(heap_.size());
 }
 
 template <typename T, typename P, typename F>
 inline bool PriorityQueue<T,P,F>::contains(const T& elem) const
 {
-	for (const auto& entry: heap_)
-		if (std::get<2>(entry) == elem) return true;
-
-	return false;
+	return index_map_.find(elem) != index_map_.end();
 }
 
 template <typename T, typename P, typename F>
@@ -108,12 +109,20 @@ inline bool PriorityQueue<T,P,Comp>::priorize(
 }
 
 template <typename T, typename P, typename F>
+void PriorityQueue<T,P,F>::exchange(int a, int b)
+{
+	index_map_[std::get<2>(heap_[a])] = b;
+	index_map_[std::get<2>(heap_[b])] = a;
+	std::swap(heap_[a], heap_[b]);
+}
+
+template <typename T, typename P, typename F>
 void PriorityQueue<T,P,F>::sift(int leaf)
 {
 	while (leaf > 0) {
 		const int root = parent(leaf);
 		if (priorize(heap_[leaf], heap_[root])) {
-			std::swap(heap_[root], heap_[leaf]);
+			exchange(root, leaf);
 			leaf = root;
 		} else {
 			break;
@@ -125,7 +134,7 @@ template <typename T, typename P, typename F>
 void PriorityQueue<T,P,F>::sink(int root)
 {
 	while (children(root) < size()) {
-		int leaf = children(root);
+		const int leaf = children(root);
 		int swap = root;
 
 		if (priorize(heap_[leaf], heap_[root]))
@@ -135,7 +144,7 @@ void PriorityQueue<T,P,F>::sink(int root)
 		if (swap == root)
 			break;
 
-		std::swap(heap_[root], heap_[swap]);
+		exchange(root, swap);
 		root = swap;
 	}
 }
@@ -143,18 +152,24 @@ void PriorityQueue<T,P,F>::sink(int root)
 template <typename T, typename P, typename F>
 void PriorityQueue<T,P,F>::enqueue(T elem, P prio)
 {
-	auto entry = std::make_tuple(std::move(prio), count_++, std::move(elem));
-	heap_.emplace_back(std::move(entry));
-	sift(size() - 1);
+	if (!contains(elem)) {
+		auto entry = std::make_tuple(std::move(prio), count_++, elem);
+		heap_.emplace_back(std::move(entry));
+		index_map_[elem] = size() - 1;
+		sift(size() - 1);
+	} else {
+		update(elem, prio);
+	}
 }
 
 template <typename T, typename P, typename F>
 T PriorityQueue<T,P,F>::dequeue()
 {
 	assert(size() > 0);
-	auto top = std::get<2>(heap_[0]);
-	std::swap(heap_[0], heap_[size() - 1]);
+	const auto top = std::get<2>(heap_[0]);
+	exchange(0, size() - 1);
 	heap_.pop_back();
+	index_map_.erase(top);
 	sink(0);
 	return top;
 }
@@ -162,46 +177,39 @@ T PriorityQueue<T,P,F>::dequeue()
 template <typename T, typename P, typename Comp>
 P PriorityQueue<T,P,Comp>::priority(const T& elem) const
 {
-	for (const auto& entry: heap_)
-		if (std::get<2>(entry) == elem) return std::get<0>(entry);
-	return P();
+	assert(contains(elem));
+	const auto pos = index_map_.find(elem);
+	if (pos == index_map_.end())
+		return P();
+	else
+		return std::get<0>(heap_[pos->second]);
 }
 
 template <typename T, typename P, typename Comp>
 P PriorityQueue<T,P,Comp>::update(const T& elem, P prio)
 {
-	for (int idx = 0; idx < size(); ++idx) {
-		auto& entry = heap_[idx];
-		if (std::get<2>(entry) == elem) {
-			P old = std::get<0>(entry);
+	const auto pos = index_map_.find(elem);
+	if (pos == index_map_.end())
+		return prio;
 
-			heap_[idx] = std::make_tuple(
-				std::move(prio),
-				std::get<1>(entry),
-				std::get<2>(entry)
-			);
+	const int idx = pos->second;
+	const auto entry = heap_[idx];
 
-			if (Comp()(prio, old))
-				sift(idx);
-			else if (prio != old)
-				sink(idx);
+	const P old = std::get<0>(entry);
+	heap_[idx] = std::make_tuple(std::move(prio), count_++, std::get<2>(entry));
 
-			return old;
-		}
-	}
-	return prio;
+	if (Comp()(prio, old))
+		sift(idx);
+	else if (prio != old)
+		sink(idx);
+
+	return old;
 }
 
 template <typename T, typename P, typename F>
-std::vector<T> PriorityQueue<T,P,F>::items() const
+const std::map<T,int>& PriorityQueue<T,P,F>::items() const
 {
-	std::vector<T> vec(heap_.size());
-	std::transform(
-		heap_.begin(), heap_.end(),
-		vec.begin(),
-		[](auto tup){ return std::get<2>(tup); }
-	);
-	return vec;
+	return index_map_;
 }
 
 } // namespace structures
