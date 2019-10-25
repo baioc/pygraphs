@@ -3,21 +3,21 @@
 
 from .libpygraphs import Digraph, Graph, PrioQ
 from .common import Node, arbitrary
-from typing import Set, Tuple, Dict, Optional, Sequence, Iterable, List
+from typing import Set, Tuple, Dict, Optional, Sequence, Union, Iterable, List
 from math import inf
 from collections import deque
 
 
-def min_tree(graph: Graph, start: Node = None) -> Set[Tuple[Node, Node, float]]:
+def min_tree(graph: Graph, root: Node = None) -> Set[Tuple[Node, Node, float]]:
     """Find the minimum spanning tree of an undirected graph through Prim.
     Returns a set containing every edge in the MSP.  O((V+E)*lg(V))"""
 
-    start = arbitrary(graph.nodes()) if start is None else start
+    root = arbitrary(graph.nodes()) if root is None else root
     ancestors: Dict[Node, Optional[Node]] = {}
     queue = PrioQ()
     for v in graph.nodes():
         ancestors[v] = None
-        queue.enqueue(v, inf if v != start else 0)
+        queue.enqueue(v, inf if v != root else 0)
 
     while not queue.empty():
         u = queue.dequeue()
@@ -28,9 +28,9 @@ def min_tree(graph: Graph, start: Node = None) -> Set[Tuple[Node, Node, float]]:
                 queue.update(v, w)
 
     forest: Set[Tuple[Node, Node, float]] = set()
-    for (child, root) in ancestors.items():
-        if root is not None:
-            forest.add((root, child, graph.weight(root, child)))
+    for (v, u) in ancestors.items():
+        if u is not None:
+            forest.add((u, v, graph.weight(u, v)))
 
     return forest
 
@@ -57,8 +57,8 @@ def toposort(graph: Digraph) -> Sequence[Node]:
     return order
 
 
-def components(graph: Digraph) -> Iterable[Set[Node]]:
-    """Find a digraph's strongly connected components via Kosaraju's algorithm.
+def components(graph: Union[Digraph, Graph]) -> Iterable[Set[Node]]:
+    """Find a graph's strongly connected components via Kosaraju's algorithm.
     Returns an iterable containing each partition. O(V+E)"""
 
     visited: Set[Node] = set()
