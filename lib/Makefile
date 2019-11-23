@@ -2,7 +2,7 @@ APP_NAME=libpygraphs
 
 CC = g++ -std=c++17
 CFLAGS = -Wall
-TEST_CFLAGS = -fsanitize=leak -g
+TEST_CFLAGS = -fsanitize=leak -g -O0
 BUILD_CFLAGS = -fpic -DNDEBUG=1 -O2
 
 SC = swig
@@ -17,7 +17,7 @@ TST = test_graph.inc test_priority_queue.inc
 
 
 default:
-	make all
+	@ make all
 
 build: $(INT) $(SRC)
 	$(SC) $(SFLAGS) $(INT)
@@ -28,14 +28,14 @@ test: $(TST) $(SRC)
 	$(CC) $(CFLAGS) $(TEST_CFLAGS) -o test_$(APP_NAME).out tests.cpp
 
 all:
-	make test
-	./test_$(APP_NAME).out
-	make build
+	@ make test
+	@ ./test_$(APP_NAME).out
+	@ make build
 
 clean:
-	- rm test_$(APP_NAME).out
-	- rm $(APP_NAME).py
-	- rm $(APP_NAME)_wrap.cxx
-	- rm *.o
-	- rm _$(APP_NAME).so
-	- rm -R __pycache__/
+	-@ rm test_$(APP_NAME).out
+	-@ rm $(APP_NAME).py
+	-@ rm $(APP_NAME)_wrap.cxx
+	-@ rm *.o
+	-@ rm _$(APP_NAME).so
+	-@ rm -R __pycache__/

@@ -3,8 +3,8 @@
 #include "graph.hpp"
 using structures::Graph;
 
-#include <cmath> // HUGE_VALF
 #include <vector>
+#include <cmath> // HUGE_VALF
 
 
 TEST_CASE("Graph directivity is a given at compile-time", "[Graph][template]")
@@ -114,7 +114,7 @@ TEST_CASE("any pair of different nodes can be linked and unlinked in a Graph", "
 	REQUIRE(g.edge_number() == 1);
 
 	g.link('b', 'c', 2.0);
-	REQUIRE(g.contains('a', 'b') == true);
+	REQUIRE(g.contains('b', 'c') == true);
 	REQUIRE(g.weight('b', 'c') == 2.0);
 	REQUIRE(g.edge_number() == 2);
 
@@ -122,9 +122,9 @@ TEST_CASE("any pair of different nodes can be linked and unlinked in a Graph", "
 		g.link('d', 'e');
 		REQUIRE(g.weight('d', 'e') == 1.0);
 
-		SECTION("reflexive edges are ignored and such a weight is always zero") {
+		SECTION("reflexive edges are ignored") {
 			REQUIRE(g.link('a', 'a', 25) == 0);
-			REQUIRE(g.weight('a', 'a') == 0);
+			REQUIRE(g.contains('a', 'a') == false);
 		}
 	}
 
@@ -166,11 +166,6 @@ TEST_CASE("any pair of different nodes can be linked and unlinked in a Graph", "
 		REQUIRE(g.weight('a', 'b') == 1.0);
 		g.link('a', 'b', 5);
 		REQUIRE(g.weight('a', 'b') == 5.0);
-
-		SECTION("an edge with infinite weight counts as no edge, so setting such a weight removes it") {
-			REQUIRE(g.link('a', 'b', HUGE_VALF) == -2);
-			REQUIRE(g.contains('a', 'b') == false);
-		}
 	}
 }
 
@@ -195,4 +190,28 @@ TEMPLATE_TEST_CASE(
 	}
 
 	REQUIRE(sum == (1 + n) * n / 2);
+}
+
+
+TEMPLATE_TEST_CASE(
+	"weighting unexisting and reflexive edges depend on Graph directivity",
+	"[Graph][template]", (Graph<char,float,false>), (Graph<char,float,true>)
+) {
+	TestType g(3);
+	g.link('a', 'b');
+	g.link('c', 'a');
+
+	SECTION("unconnected edges on undirected graphs have infinite weight and zero flow for directed arcs") {
+		if (!g.directed())
+			REQUIRE(g.weight('b', 'c') == HUGE_VALF);
+		else if (g.directed())
+			REQUIRE(g.weight('b', 'c') == 0);
+	}
+
+	SECTION("reflexive edges on undirected graphs have zero weight and infinite flow for directed arcs") {
+		if (!g.directed())
+			REQUIRE(g.weight('x', 'x') == 0);
+		else if (g.directed())
+			REQUIRE(g.weight('x', 'x') == HUGE_VALF);
+	}
 }

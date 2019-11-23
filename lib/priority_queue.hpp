@@ -158,6 +158,7 @@ void PriorityQueue<T,P,F>::enqueue(T elem, P prio)
 		index_map_[elem] = size() - 1;
 		sift(size() - 1);
 	} else {
+		// @NOTE: enqueuing an existing element simply updates its priority
 		update(elem, prio);
 	}
 }

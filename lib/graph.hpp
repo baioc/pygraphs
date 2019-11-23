@@ -53,7 +53,6 @@ class Graph {
  private:
 	unordered_map<Label,unordered_map<Label,Weight>> adjacencies_;
 	int edges_{0};
-	static constexpr Weight infinity_{std::numeric_limits<Weight>::infinity()};
 };
 
 
@@ -112,20 +111,17 @@ int Graph<L,W,dir>::erase(const L& node)
 template <typename L, typename W, bool dir>
 int Graph<L,W,dir>::link(const L& node_from, const L& node_to, W weight)
 {
-	// remove "unlinks", see criteria for contains(link) method
-	if (!(weight < infinity_))
-		return -1 * unlink(node_from, node_to); // -no. of removed links
-	else if (node_from == node_to)
+	if (node_from == node_to)
 		return 0; // ignore reflexive edges
 
 	// inserts any unregistered nodes before linking
 	const int inserted = insert(node_from) + insert(node_to);
 
-	// either made a new link
+	// either making a new link
 	if (!contains(node_from, node_to))
 		++edges_;
 
-	// or simply updated its weight
+	// or just updating its weight
 	adjacencies_[node_from][node_to] = std::move(weight);
 	if constexpr (!dir)
 		adjacencies_[node_to][node_from] = std::move(weight);
@@ -193,22 +189,33 @@ int Graph<L,W,dir>::degree_in(const L& node) const
 template <typename L, typename W, bool d>
 inline bool Graph<L,W,d>::contains(const L& node_from, const L& node_to) const
 {
-	return !(node_from == node_to) && weight(node_from, node_to) < infinity_;
+	if (contains(node_from)) {
+		auto adj = adjacencies_.at(node_from);
+		return adj.find(node_to) != adj.end();
+	}
+	return false;
 }
 
-template <typename L, typename Weight, bool d>
-Weight Graph<L,Weight,d>::weight(const L& node_from, const L& node_to) const
+template <typename L, typename Weight, bool dir>
+Weight Graph<L,Weight,dir>::weight(const L& node_from, const L& node_to) const
 {
 	if (node_from == node_to) {
-		Weight w = 0;
-		return w;
+		if constexpr (!dir)
+			return 0;
+		else // if constexpr (dir)
+			return std::numeric_limits<Weight>::infinity();
+
 	} else if (contains(node_from)) {
 		const auto& adj = adjacencies_.at(node_from);
 		const auto& pos = adj.find(node_to);
 		if (pos != adj.end())
 			return pos->second;
 	}
-	return infinity_;
+
+	if constexpr (!dir)
+		return std::numeric_limits<Weight>::infinity();
+	else // if constexpr (dir)
+		return 0;
 }
 
 template <typename L, typename W, bool d>
@@ -220,7 +227,7 @@ const unordered_map<L,unordered_map<L,W>>& Graph<L,W,d>::nodes() const
 template <typename L, typename W, bool d>
 const unordered_map<L,W>& Graph<L,W,d>::neighbours(const L& node) const
 {
-	const unordered_map<L,W> empty = {};
+	unordered_map<L,W> empty{};
 	return contains(node) ? adjacencies_.at(node) : empty;
 }
 
