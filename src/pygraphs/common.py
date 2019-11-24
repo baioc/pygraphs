@@ -1,4 +1,4 @@
-from .libpygraphs import Graph, Digraph
+from libpygraphs import Graph, Digraph
 from typing import TypeVar, Sequence, Generator, Tuple, Union, Dict
 
 
