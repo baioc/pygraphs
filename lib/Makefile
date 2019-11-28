@@ -8,7 +8,7 @@ BUILD_CFLAGS = -fpic -DNDEBUG=1 -O2
 SC = swig
 SFLAGS = -python -c++
 
-SRC = graph.hpp
+SRC = graph.hpp priority_queue.hpp
 INT = libpygraphs.i
 GEN = libpygraphs_wrap.cxx
 OBJ = libpygraphs_wrap.o

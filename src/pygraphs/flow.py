@@ -49,7 +49,8 @@ def max_flow(graph: Digraph, source: Node, sink: Node) \
 def max_matching(graph: Graph, partu: Set[Node], partv: Set[Node]) \
         -> Set[Tuple[Node, Node]]:
     """Produces the maximum cardinality matching between two given partitions
-    of an undirected bipartite graph via Hopcroft-Karp. O(sqrt(V) * E)"""
+    of an undirected bipartite graph via Hopcroft-Karp. O(sqrt(V) * E)
+    Returns the set of edges that make up the maximum matching in the graph."""
 
     dist: Dict[Node, float] = {}
     mate: Dict[Node, Node] = {}
