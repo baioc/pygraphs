@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name="pygraphs",
-    version="0.2.0",
+    version="0.3.0",
     author="Gabriel B. Sant'Anna",
     author_email="baiocchi.gabriel@gmail.com",
     description="A package for the study of graph discrete data structures and algorithms",

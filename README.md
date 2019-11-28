@@ -7,7 +7,7 @@ A package for the study of graph discrete data structures and algorithms.
 
 ### Installation
 
-At this point, distributed packages are compatible with Linux only.
+Note: at this point, distributed packages are compatible with Linux only and require a recent version of libstdc++.
 
 1. Install via [pip](https://test.pypi.org/project/pygraphs/):</br>
     ```pip install -i https://test.pypi.org/simple/ pygraphs --user```
@@ -21,15 +21,18 @@ At this point, distributed packages are compatible with Linux only.
   - Directed and undirected Graphs.
   - Priority Queue using binary heap.
 - Classic algorithms are implemented in Python with type annotations.
-  - Breadth-First and Depth-First Searches.
-  - Eulerian cycle in Hierholzer's algorithm.
-  - Hamiltonian cycle using Held-Karp.
-  - Shortest path with Bellman-Ford, Dijkstra and Floyd-Warshall algorithms.
+  - Breadth-First and Depth-First iteration with generators.
+  - Finding Eulerian cycles through Hierholzer's algorithm.
+  - Computing the minimum Hamiltonian circuit using Held-Karp's method.
+  - Shortest paths with Bellman-Ford, Dijkstra and Floyd-Warshall algorithms.
   - Minimum spanning trees through Prim.
+  - Topological sorting and finding strongly connected components using variants of DFS.
+  - Computing maximum network flow with an Edmonds-Karp implementation of the Ford-Fulkerson Algorithm.
+  - Maximum cardinality matching of bipartite graphs via Hopcroft-Karp-Karzanov.
 
 
 ## Build process
 
-Source code is made available in [our git repo](https://gitlab.com/baioc/pygraphs), together with simple makefiles.
+Source code is made available in [GitLab](https://gitlab.com/baioc/pygraphs), together with simple makefiles.
 
 Data structures and some key operations are implemented in C++17 (compiled with gcc 9.1.0) and wrapped into Python 3.6+ with [Swig](http://www.swig.org/) (version 4.0.0).

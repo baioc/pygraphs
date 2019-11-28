@@ -11,3 +11,4 @@ from .search import breadth_first, depth_first
 from .cycle import eulerian_cycle, hamiltonian_circuit
 from .path import shortest_routes, shortest_paths, shortest_network
 from .forest import min_tree, toposort, components
+from .flow import max_flow, max_matching

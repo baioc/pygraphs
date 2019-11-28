@@ -8,7 +8,8 @@ SRC = setup.py ../LICENSE ../README.md \
       $(SRCDIR)/search.py \
       $(SRCDIR)/cycle.py \
       $(SRCDIR)/path.py \
-      $(SRCDIR)/forest.py
+      $(SRCDIR)/forest.py \
+      $(SRCDIR)/flow.py
 
 OBJ = build/ dist/ $(APP_NAME).egg-info/
 

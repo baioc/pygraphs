@@ -8,6 +8,7 @@ from math import inf
 from collections import deque
 
 
+# @TODO: min_forest with Kruskall <- data structure for Disjoint Sets
 def min_tree(graph: Graph, root: Node = None) -> Set[Tuple[Node, Node, float]]:
     """Find the minimum spanning tree of an undirected graph through Prim.
     Returns a set containing every edge in the MSP.  O((V+E)*lg(V))"""
