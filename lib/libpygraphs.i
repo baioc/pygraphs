@@ -22,7 +22,7 @@
 %template(Digraph) structures::Graph<std::string,double,true>;
 %template(GraphEdges) std::unordered_map<std::string,double>;
 %template(GraphNodes) std::unordered_map<std::string,std::unordered_map<std::string,double>>;
-%template(PrioQ) structures::PriorityQueue<std::string, float>;
+%template(PriorityQueue) structures::PriorityQueue<std::string, float>;
 %template(PrioItems) std::unordered_map<std::string,int>;
 
 // type mapping

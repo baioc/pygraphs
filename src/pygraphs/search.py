@@ -17,7 +17,7 @@ def breadth_first(graph: Union[Graph, Digraph], root: Node) \
     queue = deque()
     queue.append((root, 0))
 
-    while len(queue) > 0:
+    while queue:
         (u, depth) = queue.popleft()
         for v in graph.neighbours(u):
             if v not in visited:
@@ -38,7 +38,7 @@ def depth_first(graph: Union[Graph, Digraph], root: Node) \
         visited.add(v)
         stack.append((v, 1, root))
 
-    while len(stack) > 0:
+    while stack:
         (u, depth, antecessor) = stack.pop()
         yield (u, depth, antecessor)
         for v in graph.neighbours(u):

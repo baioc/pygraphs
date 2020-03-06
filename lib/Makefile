@@ -12,7 +12,7 @@ SRC = graph.hpp priority_queue.hpp
 INT = libpygraphs.i
 GEN = libpygraphs_wrap.cxx
 OBJ = libpygraphs_wrap.o
-LIBS = -I/usr/include/python3.7m
+LIBS = -I/usr/include/python3.8
 TST = test_graph.inc test_priority_queue.inc
 
 

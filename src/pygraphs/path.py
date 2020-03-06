@@ -1,7 +1,7 @@
 # Copyright (c) 2019 Gabriel B. Sant'Anna <baiocchi.gabriel@gmail.com>
 # @License Apache <https://gitlab.com/baioc/pygraphs>
 
-from .libpygraphs import Graph, Digraph, PrioQ
+from .libpygraphs import Graph, Digraph, PriorityQueue
 from .common import Node, graph_edges
 from typing import Union, Dict, Tuple, Sequence, Optional, Set
 from math import inf
@@ -60,7 +60,7 @@ def shortest_paths(graph: Union[Graph, Digraph], source: Node) \
     # initialize
     distances: Dict[Node, float] = {}
     antecessors: Dict[Node, Optional[Node]] = {}
-    unclosed = PrioQ(graph.node_number())
+    unclosed = PriorityQueue(graph.node_number())
     for v in graph.nodes():
         d = inf if v != source else 0
         distances[v] = d

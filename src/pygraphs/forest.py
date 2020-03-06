@@ -1,7 +1,7 @@
 # Copyright (c) 2019 Gabriel B. Sant'Anna <baiocchi.gabriel@gmail.com>
 # @License Apache <https://gitlab.com/baioc/pygraphs>
 
-from .libpygraphs import Digraph, Graph, PrioQ
+from .libpygraphs import Digraph, Graph, PriorityQueue
 from .common import Node, arbitrary
 from typing import Set, Tuple, Dict, Optional, Sequence, Union, Iterable, List
 from math import inf
@@ -15,7 +15,7 @@ def min_tree(graph: Graph, root: Node = None) -> Set[Tuple[Node, Node, float]]:
 
     root = arbitrary(graph.nodes()) if root is None else root
     ancestors: Dict[Node, Optional[Node]] = {}
-    queue = PrioQ()
+    queue = PriorityQueue()
     for v in graph.nodes():
         ancestors[v] = None
         queue.enqueue(v, inf if v != root else 0)
@@ -93,7 +93,7 @@ def components(graph: Union[Digraph, Graph]) -> Iterable[Set[Node]]:
     for u in graph.nodes():
         dfs_visit(u)
 
-    while len(stack) > 0:
+    while stack:
         u = stack.pop()
         component_assign(u, u)
 

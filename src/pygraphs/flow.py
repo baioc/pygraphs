@@ -23,7 +23,7 @@ def max_flow(graph: Digraph, source: Node, sink: Node) \
 
         queue = deque()
         queue.append(source)
-        while len(queue) > 0:
+        while queue:
             u = queue.popleft()
             for v in graph.neighbours(u):
                 if v not in pred and v != source and residue(u, v) > 0:
@@ -65,7 +65,7 @@ def max_matching(graph: Graph, partu: Set[Node], partv: Set[Node]) \
                 dist[u] = inf
 
         dist[None] = inf
-        while len(queue) > 0:
+        while queue:
             u = queue.popleft()
             if dist[u] < dist[None]:
                 for v in graph.neighbours(u):

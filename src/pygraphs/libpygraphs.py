@@ -420,43 +420,43 @@ class GraphNodes(object):
 # Register GraphNodes in _libpygraphs:
 _libpygraphs.GraphNodes_swigregister(GraphNodes)
 
-class PrioQ(object):
+class PriorityQueue(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        _libpygraphs.PrioQ_swiginit(self, _libpygraphs.new_PrioQ(*args))
+        _libpygraphs.PriorityQueue_swiginit(self, _libpygraphs.new_PriorityQueue(*args))
 
     def empty(self):
-        return _libpygraphs.PrioQ_empty(self)
+        return _libpygraphs.PriorityQueue_empty(self)
 
     def size(self):
-        return _libpygraphs.PrioQ_size(self)
+        return _libpygraphs.PriorityQueue_size(self)
 
     def front(self):
-        return _libpygraphs.PrioQ_front(self)
+        return _libpygraphs.PriorityQueue_front(self)
 
     def enqueue(self, arg2, arg3):
-        return _libpygraphs.PrioQ_enqueue(self, arg2, arg3)
+        return _libpygraphs.PriorityQueue_enqueue(self, arg2, arg3)
 
     def dequeue(self):
-        return _libpygraphs.PrioQ_dequeue(self)
+        return _libpygraphs.PriorityQueue_dequeue(self)
 
     def contains(self, arg2):
-        return _libpygraphs.PrioQ_contains(self, arg2)
+        return _libpygraphs.PriorityQueue_contains(self, arg2)
 
     def priority(self, arg2):
-        return _libpygraphs.PrioQ_priority(self, arg2)
+        return _libpygraphs.PriorityQueue_priority(self, arg2)
 
     def update(self, arg2, arg3):
-        return _libpygraphs.PrioQ_update(self, arg2, arg3)
+        return _libpygraphs.PriorityQueue_update(self, arg2, arg3)
 
     def items(self):
-        return _libpygraphs.PrioQ_items(self)
-    __swig_destroy__ = _libpygraphs.delete_PrioQ
+        return _libpygraphs.PriorityQueue_items(self)
+    __swig_destroy__ = _libpygraphs.delete_PriorityQueue
 
-# Register PrioQ in _libpygraphs:
-_libpygraphs.PrioQ_swigregister(PrioQ)
+# Register PriorityQueue in _libpygraphs:
+_libpygraphs.PriorityQueue_swigregister(PriorityQueue)
 
 class PrioItems(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
